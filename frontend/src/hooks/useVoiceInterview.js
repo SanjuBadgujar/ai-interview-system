@@ -3,7 +3,7 @@ import { voiceWebSocketUrl } from "../services/api";
 
 const TARGET_SAMPLE_RATE = 16000;
 const FRAME_SIZE = 320; // 20ms @ 16kHz
-const AUTO_SUBMIT_SILENCE_MS = 2000;
+const AUTO_SUBMIT_SILENCE_MS = 700;
 const SILENCE_RMS_THRESHOLD = 0.012;
 
 // Downsample Float32 audio from the mic's native rate to 16kHz PCM16.

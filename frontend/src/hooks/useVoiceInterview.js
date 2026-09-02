@@ -5,6 +5,24 @@ const TARGET_SAMPLE_RATE = 16000;
 const FRAME_SIZE = 320; // 20ms @ 16kHz
 const AUTO_SUBMIT_SILENCE_MS = 700;
 const SILENCE_RMS_THRESHOLD = 0.012;
+const INDIAN_FEMALE_VOICE_NAMES = /neerja|heera|priya/i;
+const FEMALE_ENGLISH_VOICE_NAMES =
+  /neerja|heera|priya|zira|aria|jenny|sonia|hazel|susan|samantha|karen|moira|natasha|female/i;
+
+function getPreferredVoice() {
+  const voices = window.speechSynthesis?.getVoices?.() || [];
+  const indianEnglish = voices.filter((voice) =>
+    voice.lang?.toLowerCase().startsWith("en-in")
+  );
+  const english = voices.filter((voice) =>
+    voice.lang?.toLowerCase().startsWith("en")
+  );
+  return (
+    indianEnglish.find((voice) => INDIAN_FEMALE_VOICE_NAMES.test(voice.name)) ||
+    english.find((voice) => FEMALE_ENGLISH_VOICE_NAMES.test(voice.name)) ||
+    null
+  );
+}
 
 // Downsample Float32 audio from the mic's native rate to 16kHz PCM16.
 function downsampleAndEncode(float32Buffer, inputSampleRate) {
@@ -42,6 +60,8 @@ export function useVoiceInterview(interviewId) {
   const heardSpeechRef = useRef(false);
   const silenceStartedAtRef = useRef(null);
   const autoSubmitPendingRef = useRef(false);
+  const fallbackTextRef = useRef([]);
+  const receivedServerAudioRef = useRef(false);
 
   const sendAudioEnd = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -141,6 +161,34 @@ export function useVoiceInterview(interviewId) {
       }
     },
     [playNext, primePlayback]
+  );
+
+  // Keep the interview usable when the server cannot synthesize audio (for
+  // example, an ElevenLabs free-plan key using a library voice). This is only
+  // used when the backend explicitly reports that no audio bytes were sent.
+  const speakFallback = useCallback(
+    (text) => {
+      if (!text || !window.speechSynthesis) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "en-IN";
+      const preferredVoice = getPreferredVoice();
+      if (preferredVoice) {
+        utterance.voice = preferredVoice;
+        console.info("Interview TTS voice:", preferredVoice.name, preferredVoice.lang);
+      } else {
+        console.warn("No recognized female English system voice is installed.");
+      }
+      utterance.rate = 1;
+      utterance.onend = () => {
+        playingRef.current = false;
+        playNext();
+      };
+      utterance.onerror = utterance.onend;
+      playingRef.current = true;
+      window.speechSynthesis.speak(utterance);
+    },
+    [playNext]
   );
 
   const startListening = useCallback(async () => {
@@ -268,6 +316,8 @@ export function useVoiceInterview(interviewId) {
               setAiTextChunks((chunks) => [...chunks, { seq: msg.seq, text: msg.text }]);
               break;
             case "audio_chunk":
+              if (msg.has_audio) receivedServerAudioRef.current = true;
+              else fallbackTextRef.current.push(msg.text);
               break;
             case "ai_response":
               setThinking(false);
@@ -283,7 +333,15 @@ export function useVoiceInterview(interviewId) {
               // All AI audio has been sent; when it finishes draining (or drains
               // right away) we'll send audio_end and auto-open the mic.
               pendingAudioEndRef.current = true;
-              playNext();
+              if (!receivedServerAudioRef.current && fallbackTextRef.current.length) {
+                const fallbackText = fallbackTextRef.current.join(" ");
+                fallbackTextRef.current = [];
+                speakFallback(fallbackText);
+              } else {
+                fallbackTextRef.current = [];
+                playNext();
+              }
+              receivedServerAudioRef.current = false;
               break;
             case "listening":
               // Backend re-armed listening (e.g. empty answer) -> open mic.
@@ -314,9 +372,10 @@ export function useVoiceInterview(interviewId) {
     };
 
     wsRef.current = ws;
-  }, [interviewId, enqueueAudio, playNext]);
+  }, [interviewId, enqueueAudio, playNext, speakFallback]);
 
   const disconnect = useCallback(() => {
+    window.speechSynthesis?.cancel();
     wsRef.current?.close();
   }, []);
 

@@ -668,7 +668,14 @@ class _SequentialSender:
                 return
             # text + audio together, in order
             await self.sock.send_json({"type": "ai_text", "seq": seq, "text": text})
-            await self.sock.send_json({"type": "audio_chunk", "seq": seq, "text": text})
+            await self.sock.send_json(
+                {
+                    "type": "audio_chunk",
+                    "seq": seq,
+                    "text": text,
+                    "has_audio": bool(audio_bytes),
+                }
+            )
             if audio_bytes:
                 await self.sock.send_bytes(audio_bytes)
             _debug(f"reveal chunk seq={seq} text={text!r} audio_bytes={len(audio_bytes)}")

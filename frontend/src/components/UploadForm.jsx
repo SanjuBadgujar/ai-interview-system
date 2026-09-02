@@ -1,10 +1,47 @@
 import { useState } from "react";
 import { uploadResume, uploadJD, startInterview } from "../services/api";
 
+const DEFAULT_RESUME_TEXT = `Alex Johnson
+Software Engineer
+
+Summary
+Full-stack software engineer with 3 years of experience building reliable web applications.
+
+Skills
+JavaScript, React, Node.js, Python, FastAPI, SQL, PostgreSQL, Docker, Git
+
+Experience
+Software Engineer, Acme Labs | 2023 - Present
+- Built and maintained React and FastAPI features for a SaaS platform.
+- Designed REST APIs and optimized PostgreSQL queries.
+
+Projects
+AI Interview Platform — Built a voice-enabled mock interview app using React, FastAPI, and WebSockets.
+Analytics Dashboard — Created a responsive dashboard with role-based access and data visualizations.`;
+
+const DEFAULT_JD_TEXT = `Job Title: Full-Stack Software Engineer
+
+We are looking for a Full-Stack Software Engineer to build scalable, user-friendly web applications.
+
+Required skills
+- JavaScript and React
+- Node.js or Python with FastAPI
+- REST API design
+- SQL and PostgreSQL
+- Git and Docker
+
+Nice to have
+- WebSockets
+- Cloud deployment experience
+
+You will collaborate with product and engineering teams, write maintainable code, and deliver high-quality features.`;
+
 export default function UploadForm({ onInterviewStarted, onPrimePlayback }) {
   const [step, setStep] = useState("upload"); // "upload" | "skills" | "starting"
   const [resumeFile, setResumeFile] = useState(null);
   const [jdFile, setJdFile] = useState(null);
+  const [resumeText, setResumeText] = useState(DEFAULT_RESUME_TEXT);
+  const [jdText, setJdText] = useState(DEFAULT_JD_TEXT);
   const [jdSkills, setJdSkills] = useState([]);
   const [uploadedIds, setUploadedIds] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -12,8 +49,8 @@ export default function UploadForm({ onInterviewStarted, onPrimePlayback }) {
 
   const handleUpload = async (e) => {
     e.preventDefault();
-    if (!resumeFile || !jdFile) {
-      setError("Please select both a resume and a job description file.");
+    if ((!resumeFile && !resumeText.trim()) || (!jdFile && !jdText.trim())) {
+      setError("Please provide both a resume and a job description.");
       return;
     }
     setError(null);
@@ -21,8 +58,8 @@ export default function UploadForm({ onInterviewStarted, onPrimePlayback }) {
     try {
       onPrimePlayback?.();
       const [resumeRes, jdRes] = await Promise.all([
-        uploadResume(resumeFile),
-        uploadJD(jdFile),
+        uploadResume(resumeFile || new File([resumeText], "resume.txt", { type: "text/plain" })),
+        uploadJD(jdFile || new File([jdText], "job-description.txt", { type: "text/plain" })),
       ]);
       setUploadedIds({ resumeId: resumeRes.file_id, jdId: jdRes.file_id });
       // Extract skills from JD file for preview
@@ -73,11 +110,11 @@ export default function UploadForm({ onInterviewStarted, onPrimePlayback }) {
           <div className="file-summary">
             <div className="file-badge">
               <span className="badge-icon">📄</span>
-              <span>{resumeFile?.name}</span>
+              <span>{resumeFile?.name || "Resume text"}</span>
             </div>
             <div className="file-badge">
               <span className="badge-icon">💼</span>
-              <span>{jdFile?.name}</span>
+              <span>{jdFile?.name || "Job description text"}</span>
             </div>
           </div>
 
@@ -117,11 +154,22 @@ export default function UploadForm({ onInterviewStarted, onPrimePlayback }) {
         <div className="card-icon">🤖</div>
         <h2>AI Mock Interview</h2>
         <p className="subtitle">
-          Upload your resume and a job description to start a personalized
-          AI-powered technical interview.
+          Start with the sample resume and job description below, edit them for
+          your profile, or upload files instead.
         </p>
 
         <form className="upload-form" onSubmit={handleUpload}>
+          <label className="text-field">
+            <span className="file-title">Resume text</span>
+            <textarea
+              value={resumeText}
+              onChange={(e) => setResumeText(e.target.value)}
+              disabled={Boolean(resumeFile)}
+              rows={9}
+            />
+            {resumeFile && <span className="file-hint">Using uploaded file instead.</span>}
+          </label>
+
           <label className="file-field">
             <div className="file-label-row">
               <span className="file-icon">📄</span>
@@ -136,6 +184,17 @@ export default function UploadForm({ onInterviewStarted, onPrimePlayback }) {
             {resumeFile && (
               <span className="file-name">{resumeFile.name}</span>
             )}
+          </label>
+
+          <label className="text-field">
+            <span className="file-title">Job description text</span>
+            <textarea
+              value={jdText}
+              onChange={(e) => setJdText(e.target.value)}
+              disabled={Boolean(jdFile)}
+              rows={9}
+            />
+            {jdFile && <span className="file-hint">Using uploaded file instead.</span>}
           </label>
 
           <label className="file-field">
@@ -156,7 +215,7 @@ export default function UploadForm({ onInterviewStarted, onPrimePlayback }) {
 
           {error && <p className="error">{error}</p>}
 
-          <button type="submit" disabled={loading || !resumeFile || !jdFile}>
+          <button type="submit" disabled={loading}>
             {loading ? (
               <>
                 <span className="spinner"></span>

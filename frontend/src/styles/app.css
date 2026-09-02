@@ -167,6 +167,33 @@ body::before {
   word-break: break-all;
 }
 
+.text-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.text-field textarea {
+  min-height: 150px;
+  resize: vertical;
+  padding: 12px;
+  border: 1px solid rgba(161, 171, 255, 0.2);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  font: inherit;
+  line-height: 1.45;
+}
+
+.text-field textarea:focus {
+  outline: none;
+  border-color: rgba(79, 124, 255, 0.75);
+}
+
+.text-field textarea:disabled {
+  opacity: 0.55;
+}
+
 /* ============================================
    Buttons
    ============================================ */

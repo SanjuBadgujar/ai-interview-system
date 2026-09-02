@@ -61,7 +61,7 @@ body::before {
   border-radius: 24px;
   padding: 48px 40px;
   width: 100%;
-  max-width: 480px;
+  max-width: 980px;
   backdrop-filter: blur(20px);
   box-shadow: 
     0 4px 40px rgba(0, 0, 0, 0.4),
@@ -116,6 +116,24 @@ body::before {
   gap: 16px;
 }
 
+.document-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.document-panel {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid rgba(161, 171, 255, 0.13);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.document-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+.document-header p { margin-top: 3px; color: #7f8aa9; font-size: 12px; }
+.document-icon { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: rgba(99, 102, 241, 0.15); font-size: 17px; }
+
 .file-field {
   background: rgba(255, 255, 255, 0.03);
   border: 2px dashed rgba(255, 255, 255, 0.1);
@@ -167,6 +185,9 @@ body::before {
   word-break: break-all;
 }
 
+.compact-file-field { min-height: 52px; margin-top: 10px; padding: 12px 14px; justify-content: center; color: #aeb8d8; font-size: 12px; }
+.compact-file-field .file-name, .compact-file-field .file-hint { padding-left: 0; }
+
 .text-field {
   display: flex;
   flex-direction: column;
@@ -174,7 +195,7 @@ body::before {
 }
 
 .text-field textarea {
-  min-height: 150px;
+  min-height: 220px;
   resize: vertical;
   padding: 12px;
   border: 1px solid rgba(161, 171, 255, 0.2);
@@ -227,6 +248,20 @@ button::before {
 
 button:hover:not(:disabled)::before {
   left: 100%;
+}
+
+.analyze-btn {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 4px;
+  background: linear-gradient(135deg, #6d4cff 0%, #3b82f6 55%, #21b7a8 100%);
+  box-shadow: 0 12px 28px rgba(79, 124, 255, 0.32), 0 0 0 1px rgba(178, 205, 255, 0.18) inset;
+  letter-spacing: 0.01em;
+}
+
+.analyze-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 32px rgba(79, 124, 255, 0.42), 0 0 20px rgba(100, 174, 255, 0.18);
 }
 
 button:hover:not(:disabled) {
@@ -716,6 +751,9 @@ button:disabled {
   .upload-card h2 {
     font-size: 24px;
   }
+
+  .document-grid { grid-template-columns: 1fr; }
+  .text-field textarea { min-height: 180px; }
 
   .interview-info {
     grid-template-columns: 1fr;

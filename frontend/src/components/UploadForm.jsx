@@ -159,63 +159,33 @@ export default function UploadForm({ onInterviewStarted, onPrimePlayback }) {
         </p>
 
         <form className="upload-form" onSubmit={handleUpload}>
-          <label className="text-field">
-            <span className="file-title">Resume text</span>
-            <textarea
-              value={resumeText}
-              onChange={(e) => setResumeText(e.target.value)}
-              disabled={Boolean(resumeFile)}
-              rows={9}
-            />
-            {resumeFile && <span className="file-hint">Using uploaded file instead.</span>}
-          </label>
+          <div className="document-grid">
+            <section className="document-panel">
+              <div className="document-header"><span className="document-icon">📄</span><div><span className="file-title">Resume</span><p>Paste your resume or upload a document.</p></div></div>
+              <label className="text-field"><textarea aria-label="Resume text" value={resumeText} onChange={(e) => setResumeText(e.target.value)} disabled={Boolean(resumeFile)} rows={9} /></label>
+              <label className="file-field compact-file-field">
+                <span>Upload resume · PDF, DOCX, or TXT</span>
+                <input type="file" accept=".pdf,.docx,.doc,.txt" onChange={(e) => setResumeFile(e.target.files[0])} />
+                {resumeFile && <span className="file-name">Using: {resumeFile.name}</span>}
+                {resumeFile && <span className="file-hint">The uploaded file replaces the text above.</span>}
+              </label>
+            </section>
 
-          <label className="file-field">
-            <div className="file-label-row">
-              <span className="file-icon">📄</span>
-              <span className="file-title">Resume</span>
-            </div>
-            <span className="file-hint">PDF, DOCX, or TXT</span>
-            <input
-              type="file"
-              accept=".pdf,.docx,.doc,.txt"
-              onChange={(e) => setResumeFile(e.target.files[0])}
-            />
-            {resumeFile && (
-              <span className="file-name">{resumeFile.name}</span>
-            )}
-          </label>
-
-          <label className="text-field">
-            <span className="file-title">Job description text</span>
-            <textarea
-              value={jdText}
-              onChange={(e) => setJdText(e.target.value)}
-              disabled={Boolean(jdFile)}
-              rows={9}
-            />
-            {jdFile && <span className="file-hint">Using uploaded file instead.</span>}
-          </label>
-
-          <label className="file-field">
-            <div className="file-label-row">
-              <span className="file-icon">💼</span>
-              <span className="file-title">Job Description</span>
-            </div>
-            <span className="file-hint">PDF or TXT</span>
-            <input
-              type="file"
-              accept=".pdf,.txt"
-              onChange={(e) => setJdFile(e.target.files[0])}
-            />
-            {jdFile && (
-              <span className="file-name">{jdFile.name}</span>
-            )}
-          </label>
+            <section className="document-panel">
+              <div className="document-header"><span className="document-icon">💼</span><div><span className="file-title">Job description</span><p>Paste the role details or upload a document.</p></div></div>
+              <label className="text-field"><textarea aria-label="Job description text" value={jdText} onChange={(e) => setJdText(e.target.value)} disabled={Boolean(jdFile)} rows={9} /></label>
+              <label className="file-field compact-file-field">
+                <span>Upload job description · PDF or TXT</span>
+                <input type="file" accept=".pdf,.txt" onChange={(e) => setJdFile(e.target.files[0])} />
+                {jdFile && <span className="file-name">Using: {jdFile.name}</span>}
+                {jdFile && <span className="file-hint">The uploaded file replaces the text above.</span>}
+              </label>
+            </section>
+          </div>
 
           {error && <p className="error">{error}</p>}
 
-          <button type="submit" disabled={loading}>
+          <button className="analyze-btn" type="submit" disabled={loading}>
             {loading ? (
               <>
                 <span className="spinner"></span>
@@ -224,7 +194,7 @@ export default function UploadForm({ onInterviewStarted, onPrimePlayback }) {
             ) : (
               <>
                 <span className="btn-icon">📤</span>
-                Upload & Analyze
+                Analyze & Start Interview
               </>
             )}
           </button>

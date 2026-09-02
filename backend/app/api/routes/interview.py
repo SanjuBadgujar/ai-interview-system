@@ -14,6 +14,7 @@ from app.services.interview_planner import (
 )
 from app.services.jd_parser import parse_jd
 from app.services.resume_parser import parse_resume
+from app.services.tts_service import warmup_tts
 
 router = APIRouter(prefix="/interview", tags=["interview"])
 
@@ -59,6 +60,10 @@ async def start_interview(req: StartInterviewRequest):
     resume, jd = _restore_uploads(req.resume_id, req.jd_id)
     if not resume or not jd:
         raise HTTPException(404, "resume_id or jd_id not found — upload them first")
+
+    # Upload starts the warm-up in the background. Await it here only if it is
+    # still running, so TTS is ready before the frontend opens the voice socket.
+    await warmup_tts()
 
     plan = build_plan(resume, jd)
     session = InterviewSession(plan.interview_id, resume, jd, plan)

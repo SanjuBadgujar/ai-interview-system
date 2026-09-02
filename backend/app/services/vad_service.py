@@ -10,7 +10,7 @@ SPEECH = "speech"
 SEGMENT_DONE = "segment_done"
 START_AHEAD = "start_ahead"  # enough trailing silence to safely start the next LLM question early
 UTTERANCE_DONE = "utterance_done"
-PROMPT_TIMEOUT = "prompt_timeout"  # ~4s silence -> "Are you still there?" prompt
+PROMPT_TIMEOUT = "prompt_timeout"  # ~6s silence -> reassurance prompt
 IDLE_TIMEOUT = "idle_timeout"  # no answer after the reassurance prompt
 
 
@@ -24,8 +24,8 @@ class SilenceTracker:
       SEGMENT_DONE    - a brief pause ended a segment -> finalize & transcribe
                         that chunk now (near-real-time STT display)
       START_AHEAD     - enough trailing silence to start the next-question LLM
-      PROMPT_TIMEOUT  - ~4s silence -> send "Are you still there?" prompt
-      UTTERANCE_DONE  - ~8s total silence (after prompt) -> commit answer & move on
+      PROMPT_TIMEOUT  - ~6s silence -> send the reassurance prompt
+      UTTERANCE_DONE  - trailing silence after an answer -> commit it and move on
     """
 
     def __init__(
@@ -135,4 +135,3 @@ class SilenceTracker:
         self._segment_fired = False
         self._idle_silence_run = 0
         self._idle_prompt_sent = False
-

@@ -13,6 +13,7 @@ class Settings(BaseSettings):
 
     tts_provider: str = "pocket"
     tts_api_key: str = ""
+    hf_token: str = ""
     tts_chunk_char_limit: int = 150
     tts_chunk_min_chars: int = 40  # emit the first chunk as soon as text >= this (so playback starts sooner)
     tts_voice: str = "alba"  # any name from the pocket-tts voice catalog, or a local .wav path for cloning
@@ -24,8 +25,8 @@ class Settings(BaseSettings):
     # answer (the "they're done" trigger, after which we move to the next question).
     stt_segment_seconds: float = 0.4  # ~400ms short pause -> finalize one live chunk
     stt_silence_seconds: float = 2.5  # 2.5s trailing silence -> commit answer & move on
-    stt_prompt_timeout_seconds: float = 4.0  # 4s with no answer -> reassuring prompt
-    stt_no_answer_timeout_seconds: float = 8.0  # 4s more after the prompt -> next question
+    stt_prompt_timeout_seconds: float = 6.0  # 6s with no answer -> reassuring prompt
+    stt_no_answer_timeout_seconds: float = 12.0  # 6s more after the 6s prompt -> next question
     # Cap the length of audio given to Whisper per transcription. Long, unfiltered
     # speech can accumulate into huge buffers (tens of seconds); splitting them
     # into small pieces keeps live STT streaming in real time instead of one
